@@ -1,7 +1,7 @@
 import numpy as np
 
 def trace_generator(N,base,step_size, noise_size,t_step_up,t_step_down):
-    """ traces are generated based on your input
+    """ a single trace is generated based on your input
     
         Parameters
         ----------------
@@ -43,5 +43,38 @@ def step_generator(N,number_of_steps):
 
 
 
+def trace_simulator(N,base,step_size,noise_size,number_of_traces,max_number_of_steps):
+    """ multiple traces are generated based on your input
+    
+        Parameters
+        ----------------
+        N:          integer
+                    number of data points
+        base:       float
+                    base line of trace
+        step_size:  float
+                    displacement of an individual step
+        noise_size: float
+                    size of the noise
+        number_of_traces: int
+                    the number of traces to simulate
+        max_number_of_steps: int
+                    a random fraction of this number will be number of steps, both for up and down
+        
+        Returns
+        -----------------
+        x: a set of trajectories 
+        t_step: for every trajectory, the exact time of the steps
+        """
+    t_step = []
+    x = np.zeros((number_of_traces,len(N)))
+    for i in range(number_of_traces):
+        t_step_up = step_generator(N,int(np.random.rand(1)*max_number_of_steps))
+        t_step_down= step_generator(N,int(np.random.rand(1)*max_number_of_steps))
+        x[i,:] = trace_generator(N,base,step_size, noise_size,t_step_up,t_step_down)
+    
+    
+        t_step.append(np.concatenate((t_step_up, t_step_down)))
+    return x, t_step
 
 
