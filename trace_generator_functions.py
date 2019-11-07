@@ -2,12 +2,25 @@ import numpy as np
 
 def trace_generator(N,base,step_size, noise_size,t_step_up,t_step_down):
     """ traces are generated based on your input
-        N: number of data points
-        base: base line of trace
-        step_size: displacement of an individual step
-        noise_size: size of the noise
-        t_step_up: numpy array containing time points of UPWARD steps
-        t_step_down: numpy array containing time points of DOWNWARD steps
+    
+        Parameters
+        ----------------
+        N:          integer
+                    number of data points
+        base:       float
+                    base line of trace
+        step_size:  float
+                    displacement of an individual step
+        noise_size: float
+                    size of the noise
+        t_step_up:  numpy array 
+                    containing time points of UPWARD steps
+        t_step_down:numpy array 
+                    containing time points of DOWNWARD steps
+        
+        Returns
+        -----------------
+        a trajectory x
         """
     x_base = base
     x_noise = np.random.randn(len(N))*noise_size
@@ -27,4 +40,8 @@ def trace_generator(N,base,step_size, noise_size,t_step_up,t_step_down):
 def step_generator(N,number_of_steps):
     Q = np.floor(np.random.rand(number_of_steps)*len(N))
     return Q.astype('int')
+
+
+
+
 
