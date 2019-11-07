@@ -47,5 +47,11 @@ def stepfinder(data, window = 10, alpha = 0.05):
     
     assert len(steps) < len(data)/window
             
-    return steps
-
+    def remove_values_from_list(the_list, val):
+        return [value for value in the_list if value != val]
+    
+    for i in range(len(steps) - 1):
+        if steps[i] == steps[i + 1] - 1:
+            steps[i] = 0
+    
+    return remove_values_from_list(steps, 0)
