@@ -6,6 +6,8 @@
 
 # The first part of our project generates a bunch of random traces with discrete displacements we will refer to as steps. It is implemented as a couple of functions:
 
+# %matplotlib inline
+
 # +
 import numpy as np
 
@@ -126,7 +128,6 @@ np.save('t_step_data', t_step)
 # +
 import matplotlib.pyplot as plt
 import numpy as np
-# %matplotlib widget
 
 x = np.load('x_data.npy')
 N = range(100001)
@@ -281,7 +282,7 @@ def determine_performance(t_step_found,t_step, etha  = 1):
     percentage_peaks_found  = sum(accuracy<=etha)/len(t_step)*100
     false_positives = sum(accuracy>etha)
     return percentage_peaks_found, false_positives 
-    
+
 
 # -
 
@@ -290,7 +291,6 @@ def determine_performance(t_step_found,t_step, etha  = 1):
 # +
 import numpy as np
 import matplotlib.pyplot as plt
-# %matplotlib widget
 
 percentage_peaks_found = np.loadtxt('percentage_peaks_found.txt')
 fig, (axes1, axes2) = plt.subplots(1,2)
@@ -369,8 +369,6 @@ axes2.errorbar(noise_size,mean_false_positives,std_false_positives)
 import numpy as np
 import matplotlib.pyplot as plt
 
-# %matplotlib widget
-
 from trace_generator_functions import trace_generator
 N = np.linspace(0, 1, 1001)
 
@@ -396,3 +394,8 @@ x = trace_generator(N,base,step_size, noise_size,t_step_up,t_step_down)
 axes3.plot(N,x)
 axes3.set_ylim([80,140])
 axes3.set_title("noise size  = 5")
+# -
+
+
+
+
