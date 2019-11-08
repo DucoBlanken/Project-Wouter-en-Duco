@@ -1,4 +1,6 @@
-# The first part of the script generates a bunch of random traces, as couple of functions:
+# ### Trace generation
+
+# The first part of the script generates a bunch of random traces with discrete displacements we will refer to as steps. It is implemented as a couple of functions:
 
 # +
 import numpy as np
@@ -115,7 +117,28 @@ np.save('t_step_data', t_step)
 #
 # t_step_data: an array with where we added steps to our traces 
 
-# Now we have a stepfinder. The goal is to find the steps in our traces, without any previous knowledge of the stuff used to generated the traces (like it is real data). We're going to test it's performance by comparing the outcome (found step times) to the input. 
+# If plotted, the traces look like this
+
+# +
+import matplotlib.pyplot as plt
+import numpy as np
+# %matplotlib widget
+
+x = np.load('x_data.npy')
+N = range(100001)
+fig, (axes1, axes2) = plt.subplots(1,2)
+
+for i in range(len(x)):
+    axes1.plot(N, x[i,:])
+axes1.set_title('Ten traces')
+
+axes2.plot(range(0,1000),x[i,:1000])
+axes2.set_title('Zoom-in')
+# -
+
+# ### Stepfinder
+
+# Now we need a stepfinder. The goal is to find the steps in our traces, without any previous knowledge of the stuff used to generated the traces (like it is real data). We're going to test it's performance by comparing the outcome (found step times) to the input (set time steps). 
 
 # The step finder compares for each data point the window left and right of this data point using a t-test. When a significant change in the mean position is found, a step is called. However, multiple steps will be called around a real step. Therefore, we select and retain only the first step of a train of consecutive steps and remove the rest. The step finder then returns a list of unique non-consecutive steps.
 
@@ -186,3 +209,125 @@ def stepfinder(data, window = 10, alpha = 0.05):
     # Return the list of non-consecutive steps
     
     return remove_values_from_list(steps, 0)
+
+
+# ### Testing the performance of our stepfinder
+
+# To determine the performance of our step finder, we wrote a function (determine_performance) that takes as input the found t_steps and the actual t_steps and determines the percentage of steps correctly identified, as well as the number of false positives. We permit an error of $\eta$, which is one timepoint by default.
+
+# +
+import numpy as np
+def find_nearest(array, value):
+    """ finds nearest point in an array to a certain value
+    
+    Parameters
+    ----------
+    array: an array
+    value: a value
+    
+    Output
+    ---------
+    the closest point
+    """
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    return array[idx]
+
+def determine_accuracy(t_step_found,t_step):
+    """ For every actual step, see how close the closest found step is
+    
+     Parameters
+    ----------
+    t_step_found: the steps as found by the stepfinder
+    t_step: the actual steps, knowledge from simulation
+
+    
+    Output
+    ---------
+    an array with the distance to the nearest found step for every actual step
+    """
+    accuracy = np.zeros(len(t_step_found))
+    for j in range(len(t_step_found)):
+        accuracy[j] = abs(find_nearest(t_step,t_step_found[j])-t_step_found[j])
+    return  accuracy
+
+def determine_performance(t_step_found,t_step, etha  = 1):
+    """ determines some performance parameters for the peak finder
+    
+         Parameters
+    ----------
+    t_step_found: the steps as found by the stepfinder
+    t_step: the actual steps, knowledge from simulation
+    etha: permitted error to still be an accurate peak find, default 1
+
+    
+    Output
+    ---------
+    percentage_peaks_found: percentage of the peaks in t_peaks that is correctly identified in t_peak_founds
+    false positives: peaks found that are not peaks
+    """
+    accuracy = determine_accuracy(t_step_found,t_step)
+    percentage_peaks_found  = sum(accuracy<=etha)/len(t_step)*100
+    false_positives = sum(accuracy>etha)
+    return percentage_peaks_found, false_positives 
+    
+
+# -
+
+# Applying this function on a set of 100 traces generated with the trace generator and analysed with the stepfinder yields the following results. (Since this script takes very long, we will load results generated yesterday.) Over 90% of the peaks in this kind of data can be identified accurately, with a low number of false positives.
+
+# +
+import numpy as np
+import matplotlib.pyplot as plt
+# %matplotlib widget
+
+percentage_peaks_found = np.loadtxt('percentage_peaks_found.txt')
+fig, (axes1, axes2) = plt.subplots(1,2)
+axes1.hist(percentage_peaks_found)
+axes1.set_xlim([0,100])
+axes1.set_xlabel('Percentage of peaks found (%)')
+axes1.set_ylabel('Counts')
+
+false_positives = np.loadtxt('false_positives.txt')
+axes2.hist(false_positives)
+axes2.set_xlim([0,10])
+axes2.set_xlabel('Number of false positives')
+axes2.set_ylabel('Counts')
+# -
+
+# ### Challenging the stepfinder: traces with more noise
+
+# Finally, we challenge the stepfinder by feeding it a set of increasingly noisy traces. Since we made all those functions before, this can be executed in only a couple lines of code:
+
+# +
+from trace_generator_functions import trace_simulator
+from step_finder import stepfinder
+from performance_analysis_functions import determine_performance
+import numpy as np
+
+N = np.linspace(0, 1, 100001)
+base = 10000
+step_size = 10
+number_of_traces = 5
+max_number_of_steps = 1000
+mean_percentage_found = []
+std_percentage_found = []
+mean_false_positives = []
+std_false_positives =[]
+
+for noise_size in np.arange(0, 8, 0.5):
+    x, t_step = trace_simulator(N,base,step_size,noise_size,number_of_traces,max_number_of_steps)
+    percentage_peaks_found = np.zeros(number_of_traces)
+    false_positives = np.zeros(number_of_traces)
+    for j in range(number_of_traces):
+        t_step_found = stepfinder(x[j,:])
+        percentage_peaks_found[j], false_positives[j] = determine_performance(t_step_found,t_step[j], etha  = 1)
+     
+    mean_percentage_found.append(np.mean(percentage_peaks_found))
+    std_percentage_found.append(np.std(percentage_peaks_found))
+    mean_false_positives.append(np.mean(false_positives))
+    std_false_positives.append(np.std(false_positives))
+
+# -
+
+
