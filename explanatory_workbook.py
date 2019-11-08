@@ -1,6 +1,10 @@
+# ### Goal
+
+# Our goal was to develop a stepfinder and test its performance on traces that we generate.
+
 # ### Trace generation
 
-# The first part of the script generates a bunch of random traces with discrete displacements we will refer to as steps. It is implemented as a couple of functions:
+# The first part of our project generates a bunch of random traces with discrete displacements we will refer to as steps. It is implemented as a couple of functions:
 
 # +
 import numpy as np
@@ -131,9 +135,13 @@ fig, (axes1, axes2) = plt.subplots(1,2)
 for i in range(len(x)):
     axes1.plot(N, x[i,:])
 axes1.set_title('Ten traces')
+axes1.set_xlabel('Steps')
+axes1.set_ylabel('Position x')
 
-axes2.plot(range(0,1000),x[i,:1000])
 axes2.set_title('Zoom-in')
+axes2.set_xlabel('Steps')
+axes2.plot(range(0,1000),x[i,:1000])
+
 # -
 
 # ### Stepfinder
@@ -142,6 +150,7 @@ axes2.set_title('Zoom-in')
 
 # The step finder compares for each data point the window left and right of this data point using a t-test. When a significant change in the mean position is found, a step is called. However, multiple steps will be called around a real step. Therefore, we select and retain only the first step of a train of consecutive steps and remove the rest. The step finder then returns a list of unique non-consecutive steps.
 
+# +
 from scipy import stats
 from itertools import groupby, cycle 
 
@@ -210,6 +219,8 @@ def stepfinder(data, window = 10, alpha = 0.05):
     
     return remove_values_from_list(steps, 0)
 
+
+# -
 
 # ### Testing the performance of our stepfinder
 
@@ -305,6 +316,8 @@ from step_finder import stepfinder
 from performance_analysis_functions import determine_performance
 import numpy as np
 
+
+
 N = np.linspace(0, 1, 100001)
 base = 10000
 step_size = 10
@@ -328,6 +341,58 @@ for noise_size in np.arange(0, 8, 0.5):
     mean_false_positives.append(np.mean(false_positives))
     std_false_positives.append(np.std(false_positives))
 
-# -
+
+# +
+import numpy as np
+import matplotlib.pyplot as plt
+# %matplotlib widget
+
+noise_size= np.arange(0,8,0.5)
+
+mean_percentage_found = np.loadtxt('mean_percentage_found.txt')
+std_percentage_found = np.loadtxt('std_percentage_found.txt')
+
+mean_false_positives = np.loadtxt('mean_false_positives.txt')
+std_false_positives = np.loadtxt('std_false_positives.txt')
+
+fig, (axes1, axes2) = plt.subplots(1,2)
+axes1.set_xlabel('Noise size')
+axes1.set_ylabel('Percentage of peaks found')
+axes1.errorbar(noise_size,mean_percentage_found,std_percentage_found)
 
 
+axes2.set_xlabel('Noise size')
+axes2.set_ylabel('False positives')
+axes2.errorbar(noise_size,mean_false_positives,std_false_positives)
+
+# +
+import numpy as np
+import matplotlib.pyplot as plt
+
+# %matplotlib widget
+
+from trace_generator_functions import trace_generator
+N = np.linspace(0, 1, 1001)
+
+base = 100
+step_size = 10
+number_of_traces = 1
+t_step_up = [200, 500, 800]
+t_step_down = [400, 900]
+fig, (axes1, axes2,axes3) = plt.subplots(1,3)
+noise_size  =1
+x = trace_generator(N,base,step_size, noise_size,t_step_up,t_step_down)
+axes1.plot(N,x)
+axes1.set_ylim([80,140])
+axes1.set_title("noise size  = 1")
+
+noise_size  =2.5
+x = trace_generator(N,base,step_size, noise_size,t_step_up,t_step_down)
+axes2.plot(N,x)
+axes2.set_ylim([80,140])
+axes2.set_title("noise size  = 2.5")
+noise_size  =5
+x = trace_generator(N,base,step_size, noise_size,t_step_up,t_step_down)
+axes3.plot(N,x)
+axes3.set_ylim([80,140])
+axes3.set_title("noise size  = 5")
