@@ -299,6 +299,8 @@ import matplotlib.pyplot as plt
 
 percentage_peaks_found = np.loadtxt('percentage_peaks_found.txt')
 fig, (axes1, axes2) = plt.subplots(1,2)
+fig.tight_layout()
+
 axes1.hist(percentage_peaks_found)
 axes1.set_xlim([0,100])
 axes1.set_xlabel('Percentage of peaks found (%)')
@@ -328,6 +330,8 @@ number_of_traces = 1
 t_step_up = [200, 500, 800]
 t_step_down = [400, 900]
 fig, (axes1, axes2,axes3) = plt.subplots(1,3)
+fig.tight_layout()
+
 noise_size  =1
 x = trace_generator(N,base,step_size, noise_size,t_step_up,t_step_down)
 axes1.plot(N,x)
@@ -391,6 +395,8 @@ mean_false_positives = np.loadtxt('mean_false_positives.txt')
 std_false_positives = np.loadtxt('std_false_positives.txt')
 
 fig, (axes1, axes2) = plt.subplots(1,2)
+fig.tight_layout()
+
 axes1.set_xlabel('Noise size')
 axes1.set_ylabel('Percentage of peaks found')
 axes1.errorbar(noise_size,mean_percentage_found,std_percentage_found)
@@ -399,9 +405,3 @@ axes1.errorbar(noise_size,mean_percentage_found,std_percentage_found)
 axes2.set_xlabel('Noise size')
 axes2.set_ylabel('False positives')
 axes2.errorbar(noise_size,mean_false_positives,std_false_positives)
-# -
-
-
-
-
-
